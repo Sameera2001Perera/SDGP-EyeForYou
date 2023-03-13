@@ -12,7 +12,15 @@ if __name__ == "__main__":
         exit()
 
     app = LoginApp(database)
-    pngs = os.listdir("imageRes")
+
+    dirPath = "imageRes"
+
+    if (not os.path.exists(dirPath)):
+        os.makedirs(dirPath)
+        print("The new directory imageRes is created")
+
+    pngs = os.listdir(dirPath)
+
     if len(pngs) > 1:
         raise Exception("More than 1 ref image found in the app folder")
     elif len(pngs) == 1:
