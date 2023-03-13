@@ -3,14 +3,14 @@ import tkinter
 import customtkinter
 import cv2
 from PIL import Image, ImageTk
-from SDGP.camara import Camara
+from camara import Camara
 import time
 from multiprocessing import Process
 
 
 import customtkinter as ctk
 import tkinter as tk
-from SDGP import distanceDetectionModel
+import distanceDetectionModel
 import os
 
 

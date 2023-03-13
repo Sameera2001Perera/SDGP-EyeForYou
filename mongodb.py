@@ -7,6 +7,7 @@ class Database:
         self.cluster = MongoClient("mongodb+srv://Pasindu:Pasindu123@eyeforyoudatabase.ds8dliv.mongodb.net/?retryWrites=true&w=majority")
         self.db = self.cluster["EyeForYou"]
         self.collection=self.db["user"]
+
     def postAccount(self, username, password):
         print("posting - "+username+","+password)
         post = {"userName":username,"password":password,"refImage":None}

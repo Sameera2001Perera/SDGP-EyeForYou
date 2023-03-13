@@ -1,0 +1,4 @@
+opencv-python~=4.7.0.72
+customtkinter~=5.1.2
+Pillow~=9.4.0
+pymongo~=4.3.3
