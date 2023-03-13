@@ -38,6 +38,13 @@ class SetRefImageFrame(ctk.CTkFrame):
         check, frame = self.camara.getFrame()
         if check:
             image = self.userName + ".png"
+
+            dirPath = "imageRes"
+
+            if(not os.path.exists(dirPath)):
+                os.makedirs(dirPath)
+                print("The new directory imageRes is created")
+
             cv2.imwrite("imageRes/" + image, cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
             self.canvas.create_image(0, 0, image=ImageTk.PhotoImage(image=Image.fromarray(frame)))
         self.label.configure(text="Username or password incorrect")
