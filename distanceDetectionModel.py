@@ -1,58 +1,27 @@
 import cv2
-import time
 import os
-import mediapipe as mp
 
+def getRefImage():
+    search_root_directory = os.getcwd()
 
+    # Recursively construct list of files under root directory.
+    all_files_recursive = sum(
+        [[os.path.join(root, f) for f in files] for root, dirs, files in os.walk(search_root_directory+'\imageRes')], [])
 
+    # Define function to tell if a given file is an image
+    # Example: search for .png extension.
+    def is_an_image(fpath):
+        return os.path.splitext(fpath)[-1] in ('.png')
 
-
-class User:
-    def __init__(self,name,image):
-        self.name = name
-        self.image = image
-
-
-
-
-def captureRefImg():
-    # Open the camera
-    # Default number is zero for regular webcam
-
-    capture = cv2.VideoCapture(0)
-
-    # Checking that the camera is opened properly
-    if not capture.isOpened():
-        raise Exception("Could not open the camera !")
-
-
-    while True:
-        # Reading a frame from the camera
-        ret, frame = capture.read()
-
-        # Display the read frame
-        cv2.imshow("WebCam", frame)
-
-        # "q" is for quite
-        if cv2.waitKey(1) & 0xFF == ord('q'):
-            break
-
-        # "c" is for capture the reference image
-        if cv2.waitKey(1) & 0xFF == ord('c'):
-            cv2.imwrite("Ref_Image.png", frame, [cv2.IMWRITE_PNG_COMPRESSION, 9])
-            print("Taken photo of the user saved as Ref_Image.png")
-
-    # Release the camera
-    capture.release()
-
-    # Destroy all windows
-    cv2.destroyAllWindows()
-
-
+    # Take the first matching result. Note: throws StopIteration if not found
+    first_image_file = next(filter(is_an_image, all_files_recursive))
+    return first_image_file
 
 def measureDistance():
     # Distance between the camera and the face when taking reference image (Inches)
     refDistance = 24
+
+    # mainFrame = mainFrame[0][0]
 
     # Green colors in BGR Format
     Green = (0, 255, 0)
@@ -109,7 +78,7 @@ def measureDistance():
 
 
     # Read reference image
-    refImage = cv2.imread("Ref_Image.png")
+    refImage = cv2.imread(getRefImage())
 
     # Getting the face width in reference image
     ref_faceWidth = face_data(refImage)
@@ -132,6 +101,8 @@ def measureDistance():
 
             cv2.putText(frame, f"Distance : {distance} Inches", (50, 50), fonts, 0.5, (Green), 2)
 
+            # mainFrame.setDis(f"Distance : {distance} Inches")
+
         cv2.imshow('Camera', frame)
 
         if cv2.waitKey(1) == ord('q'):
@@ -139,29 +110,3 @@ def measureDistance():
 
     cap.release()
     cv2.destroyAllWindows()
-
-
-print("""1 - create account
-2 - start
-3 - pause
-4 - start""")
-
-option = int(input("Enter option : "))
-
-if option==1:
-    captureRefImg()
-    print("func1")
-
-    # func1()
-elif option==2:
-    measureDistance()
-    print("func2")
-    # func2()
-elif option==3:
-    print("func3")
-    # func3()
-elif option==4:
-    print("func4")
-    # func4()
-else:
-    print("Please enter a correct option number.")
