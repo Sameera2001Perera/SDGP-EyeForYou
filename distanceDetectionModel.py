@@ -1,5 +1,8 @@
+import time
+
 import cv2
 import os
+from winotify import Notification, audio
 
 def getRefImage():
     search_root_directory = os.getcwd()
@@ -89,8 +92,14 @@ def measureDistance():
     print("Focal length , line 121 ")
     print(focalLengthFound)
 
+    toast = Notification(app_id="EyeForYou", title="keep distance", msg="You are too close to the monitor", duration="short")
+    toast.set_audio(audio.SMS, loop=False)
+
+    notifyWatchCount = 0
 
     while True:
+
+        notifyWatchCount+=1
 
         _, frame = cap.read()
 
@@ -105,8 +114,17 @@ def measureDistance():
 
         cv2.imshow('Camera', frame)
 
+
         if cv2.waitKey(1) == ord('q'):
             break
+
+        if(notifyWatchCount > 100):
+            notifyWatchCount=0
+            if(distance < 15):
+                print("low distance")
+                toast.show()
+
+
 
     cap.release()
     cv2.destroyAllWindows()
