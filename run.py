@@ -6,12 +6,12 @@ import mongodb
 
 if __name__ == "__main__":
     try:
-        database = mongodb.Database()
+        mongodb.init()
     except Exception as e:
         raise Exception("Database Connection Failed! (Possible : network error!)")
         exit()
 
-    app = LoginApp(database)
+    app = LoginApp()
 
     dirPath = "imageRes"
 
@@ -27,7 +27,7 @@ if __name__ == "__main__":
         username = pngs[0].split(".")[0]
         print("username from files - - "+username)
         app.accountFrame.destroy()
-        app.placeFrame(MainApplicationFrame(master=app, db=database, userName=username, width=620, height=550, corner_radius=15))
+        app.placeFrame(MainApplicationFrame(master=app, userName=username, width=620, height=550, corner_radius=15))
         app.mainloop()
     else:
         app.mainloop()

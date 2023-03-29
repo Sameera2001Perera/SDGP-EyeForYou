@@ -7,7 +7,7 @@ from camara import Camara
 import time
 from multiprocessing import Process
 
-
+import mongodb as db
 import customtkinter as ctk
 import tkinter as tk
 import distanceDetectionModel
@@ -15,11 +15,10 @@ import os
 
 
 class SetRefImageFrame(ctk.CTkFrame):
-    def __init__(self, master, userName, db, **kwargs):
+    def __init__(self, master, userName, **kwargs):
         self.userName = userName
         self.master = master
         super().__init__(master, **kwargs)
-        self.db = db
         self.master = master
         self.label = ctk.CTkLabel(master=self, text="Set ref image", font=('Century Gothic', 30))
         self.label.place(relx=0.5, y=30, anchor=tk.CENTER)
@@ -44,11 +43,11 @@ class SetRefImageFrame(ctk.CTkFrame):
             self.canvas.create_image(0, 0, image=ImageTk.PhotoImage(image=Image.fromarray(frame)))
 
         self.label.configure(text="Username or password incorrect")
-        mainFrame = MainApplicationFrame(master=self.master, userName=self.userName, db=self.db, width=720, height=550,
+        mainFrame = MainApplicationFrame(master=self.master, userName=self.userName, width=720, height=550,
                                          corner_radius=15)
         self.master.placeFrame(mainFrame)
         self.camara.release()
-        self.db.postRefImage(self.userName)
+        db.postRefImage(self.userName)
         self.destroy()
 
     def update(self):
@@ -60,11 +59,10 @@ class SetRefImageFrame(ctk.CTkFrame):
 
         self.master.after(6, self.update)
 class MainApplicationFrame(ctk.CTkFrame):
-    def __init__(self, master, userName, db, **kwargs):
+    def __init__(self, master, userName, **kwargs):
         super().__init__(master, **kwargs)
         self.userName = userName
 
-        self.db = db
         self.master = master
 
         self.label = ctk.CTkLabel(master=self, text=self.userName, font=('Century Gothic', 30))
@@ -73,7 +71,7 @@ class MainApplicationFrame(ctk.CTkFrame):
         self.distanceLabel = ctk.CTkLabel(master=self, text="",font=('Century Gothic', 30))
         self.distanceLabel.place(relx=5, y=10, anchor=tk.CENTER)
 
-        self.distaceDetectionProcess = Process(target=distanceDetectionModel.measureDistance)
+        self.distaceDetectionProcess = Process(target=distanceDetectionModel.measureDistance, args=(self.userName,))
 
         self.snapshot_btn = ctk.CTkButton(self, text="log out", width=40, command=self.logOut)
         self.snapshot_btn.pack(anchor=tk.CENTER, expand=True)
@@ -83,6 +81,7 @@ class MainApplicationFrame(ctk.CTkFrame):
 
         self.snapshot_btn=ctk.CTkButton(self, text = "Stop", width = 30, command = self.stop)
         self.snapshot_btn.pack(anchor=tk.CENTER, expand=True)
+
     def start(self):
         self.distaceDetectionProcess.start()
         time.sleep(3)
@@ -94,16 +93,15 @@ class MainApplicationFrame(ctk.CTkFrame):
 
     def logOut(self):
         os.remove("imageRes/"+self.userName+".png")
-        self.master.placeFrame(AccountFrame(master=self.master, db=self.db, width=320, height=350, corner_radius=25))
+        self.master.placeFrame(AccountFrame(master=self.master, width=320, height=350, corner_radius=25))
         self.destroy()
     def setDis(self, distance):
         self.distanceLabel.configure(text=distance)
 
 
 class AccountFrame(customtkinter.CTkFrame):
-    def __init__(self, master, db, **kwargs):
+    def __init__(self, master, **kwargs):
         super().__init__(master, **kwargs)
-        self.db = db
         self.master = master
         self.setLoginView()
 
@@ -161,12 +159,12 @@ class AccountFrame(customtkinter.CTkFrame):
         self.errorLog.configure(text="Checking your account...")
         if(self.usernameEntry.get()=="" or self.usernameEntry.get()==""):
             self.errorLog.configure(text="Username or password is empty")
-        elif (self.db.isAvailable(self.usernameEntry.get()) and self.db.getPassword(self.usernameEntry.get()) == self.passwordEntry.get()):
-            if (self.db.hasRefImage(self.usernameEntry.get())):
-                self.db.getImage(self.usernameEntry.get())
-                self.master.placeFrame(MainApplicationFrame(master=self.master, userName=self.usernameEntry.get(), db=self.db, width=620, height=450, corner_radius=15))
+        elif (db.isAvailable(self.usernameEntry.get()) and db.getPassword(self.usernameEntry.get()) == self.passwordEntry.get()):
+            if (db.hasRefImage(self.usernameEntry.get())):
+                db.getImage(self.usernameEntry.get())
+                self.master.placeFrame(MainApplicationFrame(master=self.master, userName=self.usernameEntry.get(), width=620, height=450, corner_radius=15))
             else:
-                self.master.placeFrame(SetRefImageFrame(master=self.master, db=self.db, userName=self.usernameEntry.get(),  width=620, height=550, corner_radius=15))
+                self.master.placeFrame(SetRefImageFrame(master=self.master, userName=self.usernameEntry.get(),  width=620, height=550, corner_radius=15))
             self.destroy()
 
 
@@ -178,17 +176,17 @@ class AccountFrame(customtkinter.CTkFrame):
     def createAccount_function(self):
         if (self.usernameEntry.get()=="" or self.passwordEntry.get()==""):
             self.errorLog.configure(text="Username or Password is empty")
-        elif self.db.isAvailable(self.usernameEntry.get()):
+        elif (db.isAvailable(self.usernameEntry.get())):
             self.errorLog.configure(text="This username already exist")
         elif (str(self.passwordEntry.get()) != (str(self.confirmPasswordEntry.get()))):
             self.errorLog.configure(text="Password mismatch")
         else:
             self.errorLog.configure(text="Creating Account...")
-            self.db.postAccount(self.usernameEntry.get(), self.passwordEntry.get())
+            db.postAccount(self.usernameEntry.get(), self.passwordEntry.get())
             self.setLoginView()
 
 class LoginApp(customtkinter.CTk):
-    def __init__(self, database):
+    def __init__(self):
         super().__init__()
 
         self.geometry("780x550")
@@ -204,9 +202,7 @@ class LoginApp(customtkinter.CTk):
         self.label = customtkinter.CTkLabel(master=self, text="EyeForYou", font=('Century Gothic italic', 30), corner_radius=30)
         self.label.place(relx=0.5, y=50, anchor=tkinter.CENTER)
 
-        self.database = database
-
-        self.accountFrame = AccountFrame(master=self, db=self.database, width=320, height=350, corner_radius=25)
+        self.accountFrame = AccountFrame(master=self, width=320, height=350, corner_radius=25)
         self.placeFrame(self.accountFrame)
 
     def placeFrame(self, frame):

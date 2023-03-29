@@ -3,13 +3,16 @@ import time
 import cv2
 import os
 from winotify import Notification, audio
+import mongodb as db
+
 
 def getRefImage():
     search_root_directory = os.getcwd()
 
     # Recursively construct list of files under root directory.
     all_files_recursive = sum(
-        [[os.path.join(root, f) for f in files] for root, dirs, files in os.walk(search_root_directory+'\imageRes')], [])
+        [[os.path.join(root, f) for f in files] for root, dirs, files in
+         os.walk(search_root_directory + '\imageRes')], [])
 
     # Define function to tell if a given file is an image
     # Example: search for .png extension.
@@ -20,7 +23,11 @@ def getRefImage():
     first_image_file = next(filter(is_an_image, all_files_recursive))
     return first_image_file
 
-def measureDistance():
+
+def measureDistance(username):
+
+    db.init()
+
     # Distance between the camera and the face when taking reference image (Inches)
     refDistance = 24
 
@@ -32,13 +39,10 @@ def measureDistance():
     # Selected font to display on the image
     fonts = cv2.FONT_HERSHEY_COMPLEX
 
-
     cap = cv2.VideoCapture(0)
-
 
     # Load the required XML classifiers to detect face in a frame
     face_cascade = cv2.CascadeClassifier("haarcascade_frontalface_default.xml")
-
 
     def focal_length(refDistance, rf_imageWidth):
         """
@@ -53,7 +57,6 @@ def measureDistance():
         focal_length = (rf_imageWidth * refDistance)
         return focal_length
 
-
     def distance_measure(focalLength, frame_face_width):
         """
         The purpose of this function is measuring the distance between face and the camera.
@@ -63,7 +66,6 @@ def measureDistance():
         """
         distance = focalLength / frame_face_width
         return distance
-
 
     def face_data(image):
         """
@@ -79,7 +81,6 @@ def measureDistance():
             faceWidth = w
         return faceWidth
 
-
     # Read reference image
     refImage = cv2.imread(getRefImage())
 
@@ -92,14 +93,15 @@ def measureDistance():
     print("Focal length , line 121 ")
     print(focalLengthFound)
 
-    toast = Notification(app_id="EyeForYou", title="keep distance", msg="You are too close to the monitor", duration="short")
+    toast = Notification(app_id="EyeForYou", title="keep distance", msg="You are too close to the monitor",
+                         duration="short")
     toast.set_audio(audio.SMS, loop=False)
 
     notifyWatchCount = 0
 
     while True:
 
-        notifyWatchCount+=1
+        notifyWatchCount += 1
 
         _, frame = cap.read()
 
@@ -114,17 +116,15 @@ def measureDistance():
 
         cv2.imshow('Camera', frame)
 
-
         if cv2.waitKey(1) == ord('q'):
             break
 
-        if(notifyWatchCount > 100):
-            notifyWatchCount=0
-            if(distance < 15):
+        if (notifyWatchCount > 100):
+            notifyWatchCount = 0
+            if (distance < 20):
                 print("low distance")
                 toast.show()
-
-
+                db.postEyeBlinkWarning(username)
 
     cap.release()
     cv2.destroyAllWindows()
