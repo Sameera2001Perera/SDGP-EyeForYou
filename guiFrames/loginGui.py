@@ -71,10 +71,12 @@ class MainApplicationFrame(ctk.CTkFrame):
         self.distanceLabel = ctk.CTkLabel(master=self, text="",font=('Century Gothic', 30))
         self.distanceLabel.place(relx=5, y=10, anchor=tk.CENTER)
 
-        self.distaceDetectionProcess = Process(target=distanceDetectionModel.measureDistance, args=(self.userName,))
-
         self.snapshot_btn = ctk.CTkButton(self, text="log out", width=40, command=self.logOut)
         self.snapshot_btn.pack(anchor=tk.CENTER, expand=True)
+
+        # list of processes reason:the same process cannot be started twice a therefore a new process will be started from this list
+        self.distaceDetectionProcesses = []
+        self.distaceDetectionProcesses.append(Process(target=distanceDetectionModel.measureDistance, args=(self.userName,)))
 
         self.snapshot_btn=ctk.CTkButton(self, text = "Start", width = 30, command = self.start)
         self.snapshot_btn.pack(anchor=tk.CENTER, expand=True)
@@ -83,18 +85,19 @@ class MainApplicationFrame(ctk.CTkFrame):
         self.snapshot_btn.pack(anchor=tk.CENTER, expand=True)
 
     def start(self):
-        self.distaceDetectionProcess.start()
+        self.distaceDetectionProcesses[-1].start()
         time.sleep(3)
 
     def stop(self):
-        self.distaceDetectionProcess.terminate()
-        self.distaceDetectionProcess = Process(target=distanceDetectionModel.measureDistance)
+        self.distaceDetectionProcesses[-1].terminate()
+        self.distaceDetectionProcesses.append(Process(target=distanceDetectionModel.measureDistance, args=(self.userName,)))
+        #creating new process since the previous process cannot be started again
+        # self.distaceDetectionProcess = Process(distanceDetectionModel.measureDistance, args=(self.userName,))
 
 
     def logOut(self):
         os.remove("imageRes/"+self.userName+".png")
         self.master.placeFrame(AccountFrame(master=self.master, width=320, height=350, corner_radius=25))
-        self.destroy()
     def setDis(self, distance):
         self.distanceLabel.configure(text=distance)
 
