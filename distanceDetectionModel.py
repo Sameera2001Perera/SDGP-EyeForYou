@@ -1,10 +1,27 @@
-import time
 
 import cv2
 import os
 from winotify import Notification, audio
 import mongodb as db
 
+
+def face_data(image):
+    """
+    The purpose of this function is detecting the face in real time and return the face width.
+    :param image: This function takes an image or a video frame as an argument.
+    :return: It returns the face width in the image.
+    """
+
+    # Load the required XML classifiers to detect face in a frame
+    face_cascade = cv2.CascadeClassifier("haarcascade_frontalface_default.xml")
+
+    faceWidth = 0
+    grayImage = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    faces = face_cascade.detectMultiScale(grayImage, 1.3, 5)
+    for (x, y, h, w) in faces:
+        cv2.rectangle(image, (x, y), (x + w, y + h), (255, 255, 255), 1)
+        faceWidth = w
+    return faceWidth
 
 def getRefImage():
     search_root_directory = os.getcwd()
@@ -41,9 +58,6 @@ def measureDistance(username):
 
     cap = cv2.VideoCapture(0)
 
-    # Load the required XML classifiers to detect face in a frame
-    face_cascade = cv2.CascadeClassifier("haarcascade_frontalface_default.xml")
-
     def focal_length(refDistance, rf_imageWidth):
         """
         The purpose of this function is calculating the focal length. The distance between the camera lens and the CMOS sensor
@@ -67,19 +81,6 @@ def measureDistance(username):
         distance = focalLength / frame_face_width
         return distance
 
-    def face_data(image):
-        """
-        The purpose of this function is detecting the face in real time and return the face width.
-        :param image: This function takes an image or a video frame as an argument.
-        :return: It returns the face width in the image.
-        """
-        faceWidth = 0
-        grayImage = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-        faces = face_cascade.detectMultiScale(grayImage, 1.3, 5)
-        for (x, y, h, w) in faces:
-            cv2.rectangle(image, (x, y), (x + w, y + h), (255, 255, 255), 1)
-            faceWidth = w
-        return faceWidth
 
     # Read reference image
     refImage = cv2.imread(getRefImage())

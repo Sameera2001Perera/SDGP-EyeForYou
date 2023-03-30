@@ -12,6 +12,8 @@ import customtkinter as ctk
 import tkinter as tk
 import distanceDetectionModel
 import os
+from winotify import Notification, audio
+
 
 
 class SetRefImageFrame(ctk.CTkFrame):
@@ -35,20 +37,26 @@ class SetRefImageFrame(ctk.CTkFrame):
 
     def snapshot(self):
         check, frame = self.camara.getFrame()
-        if check:
+        if check and distanceDetectionModel.face_data(frame) != 0:
             image = self.userName + ".png"
 
             cv2.imwrite("imageRes/" + image, cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
 
             self.canvas.create_image(0, 0, image=ImageTk.PhotoImage(image=Image.fromarray(frame)))
 
-        self.label.configure(text="Username or password incorrect")
-        mainFrame = MainApplicationFrame(master=self.master, userName=self.userName, width=720, height=550,
+            mainFrame = MainApplicationFrame(master=self.master, userName=self.userName, width=720, height=550,
                                          corner_radius=15)
-        self.master.placeFrame(mainFrame)
-        self.camara.release()
-        db.postRefImage(self.userName)
-        self.destroy()
+            self.master.placeFrame(mainFrame)
+            self.camara.release()
+            db.postRefImage(self.userName)
+            self.destroy()
+        else:
+            toast = Notification(app_id="EyeForYou", title="face not recognized", msg="the system failed to recognize your face",
+                                 duration="short")
+            toast.set_audio(audio.SMS, loop=False)
+            print("face not recognized")
+            toast.show()
+
 
     def update(self):
         isTrue, frame = self.camara.getFrame()
