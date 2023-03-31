@@ -10,7 +10,7 @@ from multiprocessing import Process
 import mongodb as db
 import customtkinter as ctk
 import tkinter as tk
-import distanceDetectionModel
+import distanceAndBlinkDetectionModel
 import os
 from winotify import Notification, audio
 
@@ -37,7 +37,7 @@ class SetRefImageFrame(ctk.CTkFrame):
 
     def snapshot(self):
         check, frame = self.camara.getFrame()
-        if check and distanceDetectionModel.face_data(frame) != 0:
+        if check and distanceAndBlinkDetectionModel.face_data(frame) != 0:
             image = self.userName + ".png"
 
             cv2.imwrite("imageRes/" + image, cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
@@ -84,7 +84,7 @@ class MainApplicationFrame(ctk.CTkFrame):
 
         # list of processes reason:the same process cannot be started twice a therefore a new process will be started from this list
         self.distaceDetectionProcesses = []
-        self.distaceDetectionProcesses.append(Process(target=distanceDetectionModel.measureDistance, args=(self.userName,)))
+        self.distaceDetectionProcesses.append(Process(target=distanceAndBlinkDetectionModel.measureDistance, args=(self.userName,)))
 
         self.snapshot_btn=ctk.CTkButton(self, text = "Start", width = 30, command = self.start)
         self.snapshot_btn.pack(anchor=tk.CENTER, expand=True)
@@ -98,7 +98,7 @@ class MainApplicationFrame(ctk.CTkFrame):
 
     def stop(self):
         self.distaceDetectionProcesses[-1].terminate()
-        self.distaceDetectionProcesses.append(Process(target=distanceDetectionModel.measureDistance, args=(self.userName,)))
+        self.distaceDetectionProcesses.append(Process(target=distanceAndBlinkDetectionModel.measureDistance, args=(self.userName,)))
         #creating new process since the previous process cannot be started again
         # self.distaceDetectionProcess = Process(distanceDetectionModel.measureDistance, args=(self.userName,))
 
