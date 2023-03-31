@@ -176,11 +176,18 @@ def measureDistance(username):
     print("Focal length , line 121 ")
     print(focalLengthFound)
 
-    toast = Notification(app_id="EyeForYou", title="keep distance", msg="You are too close to the monitor",
+    toast_lowDistance = Notification(app_id="EyeForYou", title="keep distance", msg="You are too close to the monitor!",
                          duration="short")
-    toast.set_audio(audio.SMS, loop=False)
+    toast_lowDistance.set_audio(audio.SMS, loop=False)
 
-    frameCounter = 0
+    toast_lowBlinkRate = Notification(app_id="EyeForYou", title="keep blink rate", msg="Low blink rate detected!",
+                         duration="short")
+    toast_lowBlinkRate.set_audio(audio.SMS, loop=False)
+
+
+
+    frameCounter_1 = 0   #
+
     # Blink detection variables
     closeEyeFrameCounter = 0
     totalBlinks = 0
@@ -188,10 +195,12 @@ def measureDistance(username):
 
     with map_face_mesh.FaceMesh(min_detection_confidence=0.5, min_tracking_confidence=0.5) as face_mesh:
 
+        # start time
+        startTime = time.time()
 
         while True:
 
-            frameCounter += 1
+            frameCounter_1 += 1
 
             _, frame = cap.read()
 
@@ -233,18 +242,32 @@ def measureDistance(username):
 
                 cv2.putText(frame, f"Distance : {distance} Inches", (50, 50), fonts, 0.5, (green), 2)
 
-                if (frameCounter > 100): # Notification for low distance
-                    frameCounter = 0
+                if (frameCounter_1 > 25): # Notification for low distance
                     if (distance < 17):
                         print("low distance")
-                        toast.show()
+                        toast_lowDistance.show()
                         db.postEyeBlinkWarning(username)
+                    frameCounter_1 = 0
+
+
+
+                if ((time.time() - startTime) > 40):   # Calculate blink rate
+                    print(time.time() - startTime)
+                    if (12 > totalBlinks):
+                        print("Low blink rate")
+                        toast_lowBlinkRate.show()
+                    totalBlinks = 0
+                    startTime = time.time()
+
+
 
             cv2.imshow('Camera', frame)
 
             if cv2.waitKey(1) == ord('q'):
                 break
 
+
+            time.sleep(0.2)
 
 
     cap.release()
