@@ -6,7 +6,18 @@ import mediapipe as mp
 import time
 import math
 import numpy as np
+from keras.models import load_model
+import tensorflow
 
+
+# loading the model
+model = load_model('FacialEmotion/model_file_30epochs.h5')
+
+# Load the required XML classifiers to detect face in a frame
+face_cascade = cv2.CascadeClassifier("haarcascade_frontalface_default.xml")
+
+
+emotion_dict = {0:'Angry',1:'Disgust', 2:'Fear', 3:'Happy',4:'Neutral',5:'Sad',6:'Surprise'}
 
 # Distance between the camera and the face when taking reference image (Inches)
 refDistance = 24
@@ -37,8 +48,6 @@ def face_data(image):
     :return: It returns the face width in the image.
     """
 
-    # Load the required XML classifiers to detect face in a frame
-    face_cascade = cv2.CascadeClassifier("haarcascade_frontalface_default.xml")
 
     grayImage = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
@@ -48,7 +57,7 @@ def face_data(image):
         cv2.rectangle(image, (x, y), (x + w, y + h), (255, 255, 255), 1)
         faceWidth = w
 
-    return faceWidth
+    return faceWidth,grayImage
 
 def getRefImage():
     search_root_directory = os.getcwd()
@@ -77,7 +86,7 @@ def landmarks_detection(image, results, draw=False):
 
     meshCoord = [(int(point.x * imgWidth), int(point.y * imgHeight)) for point in results.multi_face_landmarks[0].landmark]
     if draw:
-        [cv.circle(image, p, 2, green, -1) for p in meshCoord]
+        [cv2.circle(image, p, 2, green, -1) for p in meshCoord]
 
     # return the tuple list for each landmark
     return meshCoord
@@ -168,7 +177,7 @@ def measureDistance(username):
     refImage = cv2.imread(getRefImage())
 
     # Getting the face width in reference image
-    ref_faceWidth = face_data(refImage)
+    ref_faceWidth,_ = face_data(refImage)
 
     # getting the focal length
     focalLengthFound = focal_length(refDistance, ref_faceWidth)
@@ -193,6 +202,9 @@ def measureDistance(username):
     totalBlinks = 0
     closedEyeFrames = 3
 
+
+    emotion_counts = [0,0,0,0,0,0,0]
+
     with map_face_mesh.FaceMesh(min_detection_confidence=0.5, min_tracking_confidence=0.5) as face_mesh:
 
         # start time
@@ -207,9 +219,9 @@ def measureDistance(username):
 
 
 
-            frameFaceWidth = face_data(frame)
+            frameFaceWidth,gray = face_data(frame)
 
-            # grayImage = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
+
 
             results = face_mesh.process(frame)
 
@@ -251,14 +263,88 @@ def measureDistance(username):
 
 
 
-                if ((time.time() - startTime) > 40):   # Calculate blink rate
+
+                # Emotion Recognition
+
+                faceEmotion = face_cascade.detectMultiScale(gray, 1.3, 3)
+
+                for x, y, w, h in faceEmotion:
+                    sub_face_img = gray[y:y + h, x:x + w]
+                    resized = cv2.resize(sub_face_img, (48, 48))
+                    normalize = resized / 255.0
+                    reshaped = np.reshape(normalize, (1, 48, 48, 1))
+                    result = model.predict(reshaped)
+                    label = np.argmax(result, axis=1)[0]
+                    emotion = emotion_dict[label]
+                    print(emotion)
+                    emotion_counts[label] +=1
+
+
+                    cv2.putText(frame, emotion, (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (255, 255, 255), 2)
+
+
+
+                if ((time.time() - startTime) > 40):
                     print(time.time() - startTime)
+                    # Calculate blink rate
                     if (12 > totalBlinks):
                         print("Low blink rate")
                         toast_lowBlinkRate.show()
                     totalBlinks = 0
-                    startTime = time.time()
 
+                    # detect emotion message
+                    max_count = max(emotion_counts)
+                    max_index = emotion_counts.index(max_count)
+
+                    if (max_index == 0):
+                        toast = Notification(app_id="EyeForYou", title="calm down!",
+                                                          msg="You seem angry. Take a brake and try calm down.",
+                                                          duration="short")
+                        toast.set_audio(audio.SMS, loop=False)
+                        toast.show()
+
+
+                    if (max_index == 2):
+                        toast = Notification(app_id="EyeForYou", title="Relax!",
+                                                          msg="You seem Scared. Take a deep breath and relax.",
+                                                          duration="short")
+                        toast.set_audio(audio.SMS, loop=False)
+                        toast.show()
+
+
+                    if (max_index == 3):
+                        toast = Notification(app_id="EyeForYou", title="Good work!",
+                                                          msg="You seem happy! Keep up the good work!",
+                                                          duration="short")
+                        toast.set_audio(audio.SMS, loop=False)
+                        toast.show()
+
+
+                    if (max_index == 4):
+                        toast = Notification(app_id="EyeForYou", title="Keep it up!",
+                                                          msg="You seem neutral. Keep up the good work!",
+                                                          duration="short")
+                        toast.set_audio(audio.SMS, loop=False)
+                        toast.show()
+
+
+                    if (max_index == 5):
+                        toast = Notification(app_id="EyeForYou", title="Take a brake!",
+                                                          msg="You seem sad. Take a brake and come back later.",
+                                                          duration="short")
+                        toast.set_audio(audio.SMS, loop=False)
+                        toast.show()
+
+
+                    if (max_index == 6):
+                        toast = Notification(app_id="EyeForYou", title="You are Surprise!!",
+                                                          msg="You seem surprise. Take a moment to gather yourself.",
+                                                          duration="short")
+                        toast.set_audio(audio.SMS, loop=False)
+                        toast.show()
+
+                    emotion_counts = [0, 0, 0, 0, 0, 0, 0]
+                    startTime = time.time()
 
 
             cv2.imshow('Camera', frame)

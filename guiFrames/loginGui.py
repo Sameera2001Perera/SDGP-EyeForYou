@@ -101,6 +101,7 @@ class MainApplicationFrame(ctk.CTkFrame):
         self.distaceDetectionProcesses.append(Process(target=distanceAndBlinkDetectionModel.measureDistance, args=(self.userName,)))
         #creating new process since the previous process cannot be started again
         # self.distaceDetectionProcess = Process(distanceDetectionModel.measureDistance, args=(self.userName,))
+        time.sleep(0.5)
 
 
     def logOut(self):
