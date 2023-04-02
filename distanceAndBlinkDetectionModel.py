@@ -130,11 +130,15 @@ def blink_ratio(landmarks, rightIndices, leftIndices):
     lVertDistance = euclaidean_distance(l_top, l_bottom)
     lHoriDistance = euclaidean_distance(l_right, l_left)
 
-    rEyeRatio = rHoriDistance / rVertDistance
-    lEyeRatio = lHoriDistance / lVertDistance
+    try:
+        rEyeRatio = rHoriDistance / rVertDistance
+        lEyeRatio = lHoriDistance / lVertDistance
+        ratio = (rEyeRatio + lEyeRatio) / 2
+        return ratio
+    except:
+        print("Something else went wrong")
+        return -1
 
-    ratio = (rEyeRatio + lEyeRatio) / 2
-    return ratio
 
 
 
@@ -145,7 +149,7 @@ def blink_ratio(landmarks, rightIndices, leftIndices):
 def measureDistance(username):
 
     # initialize database
-    db.init()
+    db.sesionInit(username)
 
     cap = cv2.VideoCapture(0)
 
@@ -200,7 +204,7 @@ def measureDistance(username):
     # Blink detection variables
     closeEyeFrameCounter = 0
     totalBlinks = 0
-    closedEyeFrames = 3
+    closedEyeFrames = 2
 
 
     emotion_counts = [0,0,0,0,0,0,0]
@@ -235,9 +239,9 @@ def measureDistance(username):
                 if results.multi_face_landmarks:
                     meshCoords = landmarks_detection(frame, results, False)
                     ratio = blink_ratio(meshCoords, rightEye, leftEye)
-                    print(ratio)
+                    print("eye blink ratio : " ,ratio)
 
-                    if ratio > 4.0:
+                    if ratio > 4.1:
                         closeEyeFrameCounter += 1
                         cv2.putText(frame, 'Blink', (200, 50), fonts, 1.3, green, 2)
 
@@ -258,7 +262,7 @@ def measureDistance(username):
                     if (distance < 17):
                         print("low distance")
                         toast_lowDistance.show()
-                        db.postEyeBlinkWarning(username)
+                        db.postEyeDistanceWarning(username)
                     frameCounter_1 = 0
 
 
@@ -289,6 +293,7 @@ def measureDistance(username):
                     # Calculate blink rate
                     if (12 > totalBlinks):
                         print("Low blink rate")
+                        db.postEyeBlinkWarning(username)
                         toast_lowBlinkRate.show()
                     totalBlinks = 0
 
