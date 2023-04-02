@@ -38,7 +38,8 @@ class SetRefImageFrame(ctk.CTkFrame):
 
     def snapshot(self):
         check, frame = self.camara.getFrame()
-        if check and distanceAndBlinkDetectionModel.face_data(frame) != 0:
+        ref_faceWidth,_ = distanceAndBlinkDetectionModel.face_data(frame)
+        if check and ref_faceWidth != 0:
             image = self.userName + ".png"
 
             cv2.imwrite("imageRes/" + image, cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
@@ -121,6 +122,8 @@ class MainApplicationFrame(ctk.CTkFrame):
 
     def logOut(self):
         os.remove("imageRes/"+self.userName+".png")
+        for widgets in self.winfo_children():
+            widgets.destroy()
         self.master.placeFrame(AccountFrame(master=self.master, width=320, height=350, corner_radius=25))
     def setDis(self, distance):
         self.distanceLabel.configure(text=distance)
