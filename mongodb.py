@@ -112,6 +112,13 @@ def getImage(username):
         pil_img = Image.open(io.BytesIO(result["refImage"]))
         pil_img.save("imageRes" + "\\" + username + ".png")
 
+def getSessions(username):
+    result = collection.find_one({"userName": username})
+    list = result["sessions"]
+    for i in list:
+        i["start_time"] = i["start_time"].strftime("%m/%d/%Y, %H:%M:%S")
+    print(list)
+    return list
 
 def hasRefImage(username):
     result = collection.find_one({"userName": username})

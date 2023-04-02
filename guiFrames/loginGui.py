@@ -13,6 +13,7 @@ import tkinter as tk
 import distanceAndBlinkDetectionModel
 import os
 from winotify import Notification, audio
+import json
 
 
 
@@ -74,23 +75,37 @@ class MainApplicationFrame(ctk.CTkFrame):
         self.master = master
 
         self.label = ctk.CTkLabel(master=self, text=self.userName, font=('Century Gothic', 30))
-        self.label.place(relx=5, y=80, anchor=tk.CENTER)
+        self.label.pack(anchor=tk.CENTER, expand=True)
 
-        self.distanceLabel = ctk.CTkLabel(master=self, text="",font=('Century Gothic', 30))
-        self.distanceLabel.place(relx=5, y=10, anchor=tk.CENTER)
-
-        self.snapshot_btn = ctk.CTkButton(self, text="log out", width=40, command=self.logOut)
-        self.snapshot_btn.pack(anchor=tk.CENTER, expand=True)
+        self.logout_btn = ctk.CTkButton(self, text="log out", width=40, command=self.logOut)
+        self.logout_btn.pack(anchor=tk.CENTER, expand=True)
 
         # list of processes reason:the same process cannot be started twice a therefore a new process will be started from this list
         self.distaceDetectionProcesses = []
         self.distaceDetectionProcesses.append(Process(target=distanceAndBlinkDetectionModel.measureDistance, args=(self.userName,)))
 
-        self.snapshot_btn=ctk.CTkButton(self, text = "Start", width = 30, command = self.start)
-        self.snapshot_btn.pack(anchor=tk.CENTER, expand=True)
+        self.start_btn=ctk.CTkButton(self, text = "Start", width = 30, command = self.start)
+        self.start_btn.pack(anchor=tk.CENTER, expand=True)
 
-        self.snapshot_btn=ctk.CTkButton(self, text = "Stop", width = 30, command = self.stop)
-        self.snapshot_btn.pack(anchor=tk.CENTER, expand=True)
+        self.stop_button=ctk.CTkButton(self, text = "Stop", width = 30, command = self.stop)
+        self.stop_button.pack(anchor=tk.CENTER, expand=True)
+
+
+        self.label = ctk.CTkLabel(master=self, text="past sessions", font=('Century Gothic', 30))
+        self.label.pack(anchor=tk.CENTER, expand=True)
+
+        #display all the past sessions conducted by the user
+        self.sessionsBox = tk.Listbox(master=self, width=70, font=("Helvetica", 15))
+        sessions = db.getSessions(username=userName)
+
+        for item in sessions:
+            self.sessionsBox.insert('end', json.dumps(item))
+
+        self.sessionsBox.pack(anchor=tk.CENTER, expand=True)
+
+
+
+        db.getSessions(username=userName)
 
     def start(self):
         self.distaceDetectionProcesses[-1].start()
