@@ -220,16 +220,10 @@ def measureDistance(username):
 
             _, frame = cap.read()
 
-
-
-
             frameFaceWidth,gray = face_data(frame)
 
 
-
             results = face_mesh.process(frame)
-
-
 
 
             if frameFaceWidth != 0:   # check whether if the face is detected or not
@@ -351,9 +345,8 @@ def measureDistance(username):
                     emotion_counts = [0, 0, 0, 0, 0, 0, 0]
                     startTime = time.time()
 
-
-            cv2.imshow('Camera', frame)
-
+            if (os.path.exists("camaraFlag.flag")==1):
+                cv2.imshow('Camera', frame)
             if cv2.waitKey(1) == ord('q'):
                 break
 

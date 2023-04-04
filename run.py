@@ -25,7 +25,7 @@ if __name__ == "__main__":
         raise Exception("More than 1 ref image found in the app folder")
     elif len(pngs) == 1:
         username = pngs[0].split(".")[0]
-        print("username from files - - "+username)
+        print("username from files - "+username)
         app.accountFrame.destroy()
         app.placeFrame(MainApplicationFrame(master=app, userName=username, width=620, height=550, corner_radius=15))
         app.mainloop()

@@ -76,20 +76,23 @@ class MainApplicationFrame(ctk.CTkFrame):
 
         self.master = master
 
-        self.label = ctk.CTkLabel(master=self, text=self.userName, font=('Century Gothic', 30))
+        self.label = ctk.CTkLabel(master=self, text="Hello "+self.userName, font=('Century Gothic', 30))
         self.label.pack(anchor=tk.CENTER, expand=True)
 
-        self.logout_btn = ctk.CTkButton(self, text="log out", width=40, command=self.logOut)
+        self.logout_btn = ctk.CTkButton(self, text="log out", width=100, command=self.logOut)
         self.logout_btn.pack(anchor=tk.CENTER, expand=True)
+
+        self.camara = ctk.CTkButton(self, text="Camara View", width=100, command=self.showCam)
+        self.camara.pack(anchor=tk.CENTER, expand=True)
 
         # list of processes reason:the same process cannot be started twice a therefore a new process will be started from this list
         self.distaceDetectionProcesses = []
         self.distaceDetectionProcesses.append(Process(target=distanceAndBlinkDetectionModel.measureDistance, args=(self.userName,)))
 
-        self.start_btn=ctk.CTkButton(self, text = "Start", width = 30, command = self.start)
+        self.start_btn=ctk.CTkButton(self, text = "Start", width = 100, command = self.start)
         self.start_btn.pack(anchor=tk.CENTER, expand=True)
 
-        self.stop_button=ctk.CTkButton(self, text = "Stop", width = 30, command = self.stop)
+        self.stop_button=ctk.CTkButton(self, text = "Stop", width = 100, command = self.stop)
         self.stop_button.pack(anchor=tk.CENTER, expand=True)
 
         self.label = ctk.CTkLabel(master=self, text="past sessions", font=('Century Gothic', 30))
@@ -113,6 +116,15 @@ class MainApplicationFrame(ctk.CTkFrame):
             rc+=1
 
         # resize the canvas when the frame size changes
+    def showCam(self):
+        if(os.path.exists("camaraFlag.flag")):
+            os.remove("camaraFlag.flag")
+        else:
+            with open('camaraFlag.flag', 'w') as fp:
+                pass
+            fp.close()
+
+
     def start(self):
         self.distaceDetectionProcesses[-1].start()
         self.start_btn.configure(state="disabled")
