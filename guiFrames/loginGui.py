@@ -17,6 +17,7 @@ import json
 
 
 
+
 class SetRefImageFrame(ctk.CTkFrame):
     def __init__(self, master, userName, **kwargs):
         self.userName = userName
@@ -91,33 +92,42 @@ class MainApplicationFrame(ctk.CTkFrame):
         self.stop_button=ctk.CTkButton(self, text = "Stop", width = 30, command = self.stop)
         self.stop_button.pack(anchor=tk.CENTER, expand=True)
 
-
         self.label = ctk.CTkLabel(master=self, text="past sessions", font=('Century Gothic', 30))
         self.label.pack(anchor=tk.CENTER, expand=True)
 
-        #display all the past sessions conducted by the user
-        self.sessionsBox = tk.Listbox(master=self, width=70, font=("Helvetica", 15))
-        sessions = db.getSessions(username=userName)
-
-        for item in sessions:
-            self.sessionsBox.insert('end', json.dumps(item))
-
+        # display all the past sessions conducted by the user
+        self.sessionsBox = tk.Listbox(master=self, width=67, font=("Helvetica", 15))
         self.sessionsBox.pack(anchor=tk.CENTER, expand=True)
 
+        sessions = db.getSessions(username=userName)
 
+        rc = 0
+        for item in sessions:
+            dictionary = json.loads(json.dumps(item))
+            time = dictionary["start_time"]
+            blinkWarnings = dictionary["blinkWarnings"]
+            distanceWarnings = dictionary["distanceWarnings"]
 
-        db.getSessions(username=userName)
+            self.sessionsBox.insert(rc, "   start time : "+str(time)+"  ,  blink warnings : "+str(blinkWarnings)+"  ,  distance warnings : "+str(distanceWarnings))
 
+            rc+=1
+
+        # resize the canvas when the frame size changes
     def start(self):
         self.distaceDetectionProcesses[-1].start()
-        time.sleep(3)
+        self.start_btn.configure(state="disabled")
+        self.stop_button.configure(state="enable")
+        self.logout_btn.configure(state="disabled")
+
 
     def stop(self):
         self.distaceDetectionProcesses[-1].terminate()
         self.distaceDetectionProcesses.append(Process(target=distanceAndBlinkDetectionModel.measureDistance, args=(self.userName,)))
+        self.start_btn.configure(state="enable")
+        self.stop_button.configure(state="disabled")
+        self.logout_btn.configure(state="enable")
         #creating new process since the previous process cannot be started again
         # self.distaceDetectionProcess = Process(distanceDetectionModel.measureDistance, args=(self.userName,))
-        time.sleep(0.5)
 
 
     def logOut(self):
