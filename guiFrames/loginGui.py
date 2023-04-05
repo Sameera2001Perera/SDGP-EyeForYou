@@ -3,10 +3,8 @@ import tkinter
 import customtkinter
 import cv2
 from PIL import Image, ImageTk
-from setuptools.command.build import build
 
 from camara import Camara
-import time
 from multiprocessing import Process
 
 import mongodb as db
@@ -92,16 +90,16 @@ class MainApplicationFrame(ctk.CTkFrame):
         button_frame = ctk.CTkFrame(self)
         button_frame.grid(row=3, column=0, padx=20, pady=(20, 20), sticky="nsew")
 
-        self.logout_btn = ctk.CTkButton(button_frame, text="log out", width=100, command=self.logOut)
+        self.logout_btn = ctk.CTkButton(button_frame, text="log out", fg_color='red',hover_color='#9F3630',width=100, command=self.logOut)
         self.logout_btn.pack(anchor=tk.CENTER, expand=True)
 
         self.camara = ctk.CTkButton(button_frame, text="Camara View", width=100, command=self.showCam)
         self.camara.pack(anchor=tk.CENTER, expand=True)
 
-        self.start_btn=ctk.CTkButton(button_frame, text = "Start", width = 100, command = self.start)
+        self.start_btn=ctk.CTkButton(button_frame, text = "Start",fg_color='#4F8422',hover_color='#276422',width = 100, command = self.start)
         self.start_btn.pack(anchor=tk.CENTER, expand=True)
 
-        self.stop_button=ctk.CTkButton(button_frame, text = "Stop", width = 100, command = self.stop)
+        self.stop_button=ctk.CTkButton(button_frame, text = "Stop", fg_color='#6D544D',hover_color='#9E544D', width = 100, command = self.stop)
         self.stop_button.pack(anchor=tk.CENTER, expand=True)
 
         # Usage History label
