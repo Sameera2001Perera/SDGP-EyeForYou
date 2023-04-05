@@ -3,8 +3,8 @@ name: Python Package using Conda
 on: [push]
 
 jobs:
-  build-windows:
-    runs-on: windows-latest
+  build-linux:
+    runs-on: ubuntu-latest
     strategy:
       max-parallel: 5
 
@@ -20,7 +20,8 @@ jobs:
         echo $CONDA/bin >> $GITHUB_PATH
     - name: Install dependencies
       run: |
-        conda env update --file environment.yml --name base
+        conda create --name my_new_env opencv-python
+        conda activate my_new_env
     - name: Lint with flake8
       run: |
         conda install flake8
