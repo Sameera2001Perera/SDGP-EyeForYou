@@ -1,5 +1,7 @@
 import dbe_test
+import mongodb
 import pytest
+from datetime import datetime
 
 def test_euclaidean_distance():
     assert dbe_test.euclaidean_distance((2,5),(4,8)) == 3.605551275463989
@@ -16,3 +18,21 @@ def test_distance_measure():
 
 
 
+def test_database1():
+    mongodb.init()
+    username = datetime.now().strftime("%m/%d/%Y, %H:%M:%S")
+    assert not mongodb.isAvailable(username)
+
+
+def test_database2():
+    mongodb.init()
+    username = datetime.now().strftime("%m/%d/%Y, %H:%M:%S")
+    mongodb.postAccount(username,"password")
+    assert mongodb.isAvailable(username)
+
+
+def test_database3():
+    mongodb.init()
+    username = datetime.now().strftime("%m/%d/%Y, %H:%M:%S")
+    mongodb.postAccount(username,"password")
+    assert mongodb.getPassword(username) == "password"
