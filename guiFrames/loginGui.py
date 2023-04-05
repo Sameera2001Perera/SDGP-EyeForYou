@@ -3,6 +3,8 @@ import tkinter
 import customtkinter
 import cv2
 from PIL import Image, ImageTk
+from setuptools.command.build import build
+
 from camara import Camara
 import time
 from multiprocessing import Process
@@ -76,33 +78,67 @@ class MainApplicationFrame(ctk.CTkFrame):
 
         self.master = master
 
-        self.label = ctk.CTkLabel(master=self, text="Hello "+self.userName, font=('Century Gothic', 30))
-        self.label.pack(anchor=tk.CENTER, expand=True)
+        self.grid_rowconfigure(0, weight=1)
+        self.grid_columnconfigure((0, 1), weight=1)
 
-        self.logout_btn = ctk.CTkButton(self, text="log out", width=100, command=self.logOut)
-        self.logout_btn.pack(anchor=tk.CENTER, expand=True)
+        #hell user label
+        self.label = ctk.CTkLabel(master=self, text="Hello "+self.userName+" ...", font=('Century Gothic', 30), height=50)
+        self.label.grid(row=0, column=0, columnspan=2, padx=20, pady=(20, 10), sticky="nsew")
 
-        self.camara = ctk.CTkButton(self, text="Camara View", width=100, command=self.showCam)
-        self.camara.pack(anchor=tk.CENTER, expand=True)
-
-        # list of processes reason:the same process cannot be started twice a therefore a new process will be started from this list
         self.distaceDetectionProcesses = []
         self.distaceDetectionProcesses.append(Process(target=distanceAndBlinkDetectionModel.measureDistance, args=(self.userName,)))
 
-        self.start_btn=ctk.CTkButton(self, text = "Start", width = 100, command = self.start)
+        # align buttons to the left
+        button_frame = ctk.CTkFrame(self)
+        button_frame.grid(row=3, column=0, padx=20, pady=(20, 20), sticky="nsew")
+
+        self.logout_btn = ctk.CTkButton(button_frame, text="log out", width=100, command=self.logOut)
+        self.logout_btn.pack(anchor=tk.CENTER, expand=True)
+
+        self.camara = ctk.CTkButton(button_frame, text="Camara View", width=100, command=self.showCam)
+        self.camara.pack(anchor=tk.CENTER, expand=True)
+
+        self.start_btn=ctk.CTkButton(button_frame, text = "Start", width = 100, command = self.start)
         self.start_btn.pack(anchor=tk.CENTER, expand=True)
 
-        self.stop_button=ctk.CTkButton(self, text = "Stop", width = 100, command = self.stop)
+        self.stop_button=ctk.CTkButton(button_frame, text = "Stop", width = 100, command = self.stop)
         self.stop_button.pack(anchor=tk.CENTER, expand=True)
 
-        self.label = ctk.CTkLabel(master=self, text="past sessions", font=('Century Gothic', 30))
-        self.label.pack(anchor=tk.CENTER, expand=True)
+        # Usage History label
+        self.label = ctk.CTkLabel(master=self, text="History", font=('Century Gothic', 20))
+        self.label.grid(row=2, column=1, padx=20, pady=(10, 5), sticky="nsew")
 
-        # display all the past sessions conducted by the user
-        self.sessionsBox = tk.Listbox(master=self, width=67, font=("Helvetica", 15))
-        self.sessionsBox.pack(anchor=tk.CENTER, expand=True)
+        #frame for the table
+        self.hFrame = customtkinter.CTkFrame(master=self, width=200, height=150)
+        self.hFrame.grid(row=3, column=1, sticky="nswe", padx=15, pady=15)
+
 
         sessions = db.getSessions(username=userName)
+
+        #tabel
+        columns = ("date and time", "eye blink warnings", "distance warnings")
+        self.table = tk.ttk.Treeview(master=self.hFrame,
+                                  columns=columns,
+                                  height=10,
+                                  selectmode='browse',
+                                  show='headings')
+
+        self.table["columns"] = columns
+
+        self.table.grid(row=0, column=0, sticky='nsew', padx=10, pady=10)
+
+
+        # self.sessionsBox = tk.Listbox(master=self, width=67, font=("Helvetica", 15))
+        # self.sessionsBox.grid(row=2, column=1, columnspan=2, padx=20, pady=(0, 20), sticky="nsew")
+        self.table.column("date and time", width=150)
+        self.table.column("eye blink warnings", width=100, anchor=tk.CENTER)
+        self.table.column("distance warnings", width=100, anchor=tk.CENTER)
+
+        self.table.heading('date and time', text='Date\Time')
+        self.table.heading('eye blink warnings', text='Eye Blink Warnings')
+        self.table.heading('distance warnings', text='Distance Warnings')
+
+
 
         rc = 0
         for item in sessions:
@@ -111,9 +147,15 @@ class MainApplicationFrame(ctk.CTkFrame):
             blinkWarnings = dictionary["blinkWarnings"]
             distanceWarnings = dictionary["distanceWarnings"]
 
-            self.sessionsBox.insert(rc, "   start time : "+str(time)+"  ,  blink warnings : "+str(blinkWarnings)+"  ,  distance warnings : "+str(distanceWarnings))
+            self.table.insert("", index=0, iid=rc, values=(time,blinkWarnings,distanceWarnings))
+
+
+            # self.sessionsBox.insert(rc, "   start time : "+str(time)+"  ,  blink warnings : "+str(blinkWarnings)+"  ,  distance warnings : "+str(distanceWarnings))
 
             rc+=1
+
+        self.table.bind('<Motion>', 'break')
+
 
         # resize the canvas when the frame size changes
     def showCam(self):
