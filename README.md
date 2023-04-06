@@ -1,3 +1,5 @@
+![Unit Tests](https://img.shields.io/badge/Unit%20Tests-Passing-brightgreen)
+
 # EyeForYou: Real-time Emotion Detection and Eye Blinking System
 
 EyeForYou is a real-time emotion detection and eye blinking system that uses computer vision and machine learning techniques to detect user emotions and eye blinks. The system is built using Python programming language and Tkinter graphical user interface (GUI) library. OpenCV is used for face detection in real-time, while facial landmarks are captured in real-time using the Mediapipe library. Convolutional Neural Network (CNN) is used for facial emotion recognition in real-time. MongoDB Atlas cloud database service is used as a database to save user login information and usage data, which is connected with the front end using the pymongo python library.
