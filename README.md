@@ -1,7 +1,16 @@
 ![Unit Tests](https://img.shields.io/badge/Unit%20Tests-Passing-brightgreen)
-
 # EyeForYou: Real-time Emotion Detection and Eye Blinking System
 
+Table of Contents
+=================
+
+* [Overview](#overview)
+* [Technologies Used](#technologies-used)
+* [Getting Started](#getting-started)
+* [Usage](#usage)
+* [Future Work](#future-work)
+
+## Overview
 EyeForYou is a real-time emotion detection and eye blinking system that uses computer vision and machine learning techniques to detect user emotions and eye blinks. The system is built using Python programming language and Tkinter graphical user interface (GUI) library. OpenCV is used for face detection in real-time, while facial landmarks are captured in real-time using the Mediapipe library. Convolutional Neural Network (CNN) is used for facial emotion recognition in real-time. MongoDB Atlas cloud database service is used as a database to save user login information and usage data, which is connected with the front end using the pymongo python library.
 
 ## Technologies Used
@@ -27,6 +36,4 @@ The EyeForYou system has a simple and user-friendly interface. Once the system i
 
 ## Future Work
 In the future, we plan to improve the accuracy of emotion detection by using more advanced machine learning techniques. We also plan to add more features, such as user-specific settings and personalized recommendations for reducing eye strain.
-
-
 
