@@ -11,7 +11,7 @@ import tensorflow
 
 
 # loading the model
-model = load_model('FacialEmotion/model_file_30epochs.h5')
+model = load_model('FacialEmotion/model_file.h5')
 
 # Load the required XML classifiers to detect face in a frame
 face_cascade = cv2.CascadeClassifier("haarcascade_frontalface_default.xml")
